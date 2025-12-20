@@ -63,6 +63,7 @@ model User {
   consentAsPatient  PatientConsent[]    @relation("PatientConsents")
   consentAsDoctor   PatientConsent[]    @relation("DoctorConsents")
   doctorComments    DoctorComment[]
+  dailyLogs         DailyLog[]
 }
 
 // Doctor Profile (extends User)
@@ -208,4 +209,49 @@ model DoctorComment {
   createdAt DateTime @default(now())
   
   @@index([patientId, createdAt])
+}
+
+// Daily Health Log (questionnaire responses)
+model DailyLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+  
+  // Mood tracking
+  mood            String?  // e.g., "happy", "sad", "anxious", "energetic", "tired"
+  
+  // Period related
+  isOnPeriod      Boolean  @default(false)
+  flowIntensity   String?  // "light", "moderate", "heavy"
+  cramps          Int?     // 0-10 scale
+  
+  // General health
+  energyLevel     Int?     // 1-10 scale
+  sleepQuality    Int?     // 1-10 scale
+  sleepHours      Float?   // hours of sleep
+  stressLevel     Int?     // 1-10 scale
+  exerciseMinutes Int?     // minutes of exercise
+  
+  // Symptoms
+  symptoms        String[] // Array of symptoms (e.g., "headache", "bloating", "acne", "hair_fall")
+  
+  // Photo for tracking physical changes (acne, facial hair)
+  photoUrl        String?  // Path or URL to the daily photo
+  
+  // Photo analysis results (AI/ML processed)
+  acneCount       Int?     // Detected number of acne spots
+  acneSeverity    Float?   // Severity score 0-10
+  facialHairScore Float?   // Facial hair density score 0-10
+  skinTexture     Float?   // Skin texture quality 0-10
+  analysisDate    DateTime? // When photo was analyzed
+  
+  // Additional notes
+  notes           String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId, date])
+  @@index([userId, date])
 }
