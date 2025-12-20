@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  
+  body {
+    @apply bg-warm-beige-50 text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-soft-pink-400 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-soft-pink-500 transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-sage-500 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-sage-600 transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+  
+  .card {
+    @apply bg-white rounded-card shadow-card p-6 transition-shadow duration-200 hover:shadow-lg;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-soft-pink-300 focus:border-soft-pink-400 outline-none transition-all duration-200;
+  }
+  
+  .medical-disclaimer {
+    @apply bg-warm-beige-100 border-l-4 border-sage-500 p-4 rounded-r-lg text-sm text-gray-700;
+  }
+}
+
+@layer utilities {
+  .text-gradient-pink {
+    @apply bg-gradient-to-r from-soft-pink-500 to-soft-pink-700 bg-clip-text text-transparent;
+  }
+}

@@ -1,0 +1,211 @@
+// Prisma schema for PCOS Early-Detection App
+// PostgreSQL database with comprehensive health tracking models
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  DOCTOR
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum RiskLevel {
+  LOW
+  MODERATE
+  HIGH
+}
+
+enum FlowIntensity {
+  LIGHT
+  MODERATE
+  HEAVY
+}
+
+enum ConsentStatus {
+  PENDING
+  APPROVED
+  REVOKED
+}
+
+// Core User Model
+model User {
+  id                String              @id @default(uuid())
+  email             String              @unique
+  password          String
+  role              UserRole            @default(USER)
+  firstName         String?
+  lastName          String?
+  phone             String?
+  dateOfBirth       DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  // Relations
+  doctor            Doctor?
+  cycleEntries      CycleEntry[]
+  symptomLogs       SymptomLog[]
+  riskScores        RiskScore[]
+  habitLogs         HabitLog[]
+  userChallenges    UserChallenge[]
+  appointmentSummaries AppointmentSummary[]
+  consentAsPatient  PatientConsent[]    @relation("PatientConsents")
+  consentAsDoctor   PatientConsent[]    @relation("DoctorConsents")
+  doctorComments    DoctorComment[]
+}
+
+// Doctor Profile (extends User)
+model Doctor {
+  id                  String              @id @default(uuid())
+  userId              String              @unique
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialization      String?
+  licenseNumber       String?
+  verificationStatus  VerificationStatus  @default(PENDING)
+  yearsOfExperience   Int?
+  hospitalAffiliation String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+}
+
+// Menstrual Cycle Tracking
+model CycleEntry {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate       DateTime
+  endDate         DateTime?
+  flowIntensity   FlowIntensity?
+  painLevel       Int?           // 0-10 scale
+  notes           String?
+  medications     String[]       // Array of medication names
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([userId, startDate])
+}
+
+// Symptom Logging (adaptive tracking)
+model SymptomLog {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime
+  symptomType   String   // e.g., "acne", "hair_loss", "mood_swing", "bloating"
+  severity      Int      // 0-10 scale
+  notes         String?
+  createdAt     DateTime @default(now())
+  
+  @@index([userId, date])
+}
+
+// PCOS Risk Score (explainable AI output)
+model RiskScore {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score          Float     // 0-100
+  riskLevel      RiskLevel
+  reasons        String[]  // Array of explanation strings (e.g., "Cycle >45 days", "BMI trend up")
+  calculatedAt   DateTime  @default(now())
+  
+  // Optional: store input factors for transparency
+  cycleLength    Int?
+  bmiValue       Float?
+  symptomCount   Int?
+  
+  @@index([userId, calculatedAt])
+}
+
+// Habit & Lifestyle Tracking
+model HabitLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habitType   String   // e.g., "walk_10k", "sleep_7h", "no_sugar", "mindful_eating"
+  date        DateTime
+  completed   Boolean  @default(false)
+  value       Float?   // Optional: actual value (e.g., 8532 steps, 7.5 hours sleep)
+  notes       String?
+  createdAt   DateTime @default(now())
+  
+  @@unique([userId, habitType, date])
+  @@index([userId, date])
+}
+
+// Challenges (gamification)
+model Challenge {
+  id              String          @id @default(uuid())
+  name            String
+  description     String
+  duration        Int             // in days
+  habitType       String          // links to HabitLog.habitType
+  pcosConnection  String          // Why this helps PCOS
+  reward          String?         // e.g., "Badge", "Points"
+  createdAt       DateTime        @default(now())
+  
+  userChallenges  UserChallenge[]
+}
+
+model UserChallenge {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeId   String
+  challenge     Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  startDate     DateTime
+  endDate       DateTime
+  completed     Boolean   @default(false)
+  currentStreak Int       @default(0)
+  createdAt     DateTime  @default(now())
+  
+  @@unique([userId, challengeId, startDate])
+  @@index([userId, completed])
+}
+
+// Appointment Preparation PDF
+model AppointmentSummary {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedAt DateTime @default(now())
+  pdfUrl      String?  // S3 or local storage path
+  data        Json     // JSON snapshot of cycle, symptoms, risk data
+}
+
+// Patient-Doctor Consent & Access
+model PatientConsent {
+  id        String        @id @default(uuid())
+  patientId String
+  patient   User          @relation("PatientConsents", fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId  String
+  doctor    User          @relation("DoctorConsents", fields: [doctorId], references: [id], onDelete: Cascade)
+  status    ConsentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  
+  @@unique([patientId, doctorId])
+  @@index([doctorId, status])
+}
+
+// Doctor Comments on Patient Records
+model DoctorComment {
+  id        String   @id @default(uuid())
+  patientId String
+  patient   User     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  comment   String
+  createdAt DateTime @default(now())
+  
+  @@index([patientId, createdAt])
+}
