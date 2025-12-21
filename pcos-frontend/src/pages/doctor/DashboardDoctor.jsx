@@ -5,11 +5,18 @@ import {
     LayoutDashboard,
     Users,
     AlertTriangle,
+    Bot,
+    MessageCircle,
+    MessageSquare,
     LogOut,
     Menu,
     X,
     Stethoscope
 } from 'lucide-react';
+import { PatientsListPage } from './PatientsListPage';
+import { AIChatPage } from './AIChatPage';
+import { CommunityPage } from './CommunityPage';
+import { MessagingPage } from './MessagingPage';
 
 const Overview = () => (
     <div className="space-y-6">
@@ -44,12 +51,10 @@ const Overview = () => (
     </div>
 );
 
-const Patients = () => (
-    <div className="card">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Patient List</h2>
-        <p className="text-gray-600">View and manage consented patients here.</p>
-    </div>
-);
+const Patients = () => <PatientsListPage />;
+const AIChat = () => <AIChatPage />;
+const Community = () => <CommunityPage />;
+const Messaging = () => <MessagingPage />;
 
 export const DoctorDashboard = () => {
     const { user, logout } = useAuth();
@@ -64,6 +69,9 @@ export const DoctorDashboard = () => {
     const navItems = [
         { path: '/doctor', icon: LayoutDashboard, label: 'Dashboard', exact: true },
         { path: '/doctor/patients', icon: Users, label: 'Patients' },
+        { path: '/doctor/community', icon: MessageSquare, label: 'Community' },
+        { path: '/doctor/messages', icon: MessageCircle, label: 'Messages' },
+        { path: '/doctor/ai-chat', icon: Bot, label: 'AI Assistant' },
     ];
 
     return (
@@ -170,6 +178,9 @@ export const DoctorDashboard = () => {
                     <Routes>
                         <Route index element={<Overview />} />
                         <Route path="patients" element={<Patients />} />
+                        <Route path="community" element={<Community />} />
+                        <Route path="messages" element={<Messaging />} />
+                        <Route path="ai-chat" element={<AIChat />} />
                     </Routes>
                 </div>
             </main>

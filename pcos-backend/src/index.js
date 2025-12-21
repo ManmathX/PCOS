@@ -19,6 +19,9 @@ import habitsRoutes from "./routes/habits.js";
 import challengesRoutes from "./routes/challenges.js";
 import doctorRoutes from "./routes/doctor.js";
 import dailyLogsRoutes from "./routes/dailyLogs.js";
+import aiChatRoutes from './routes/aiChat.js';
+import communitiesRoutes from './routes/communities.js';
+import messagesRoutes from './routes/messages.js';
 import { authenticateToken } from "./middleware/auth.js";
 import { requireUser, requireDoctor } from "./middleware/rbac.js";
 
@@ -77,6 +80,9 @@ app.use("/api/habits", authenticateToken, requireUser, habitsRoutes);
 app.use("/api/challenges", authenticateToken, requireUser, challengesRoutes);
 app.use("/api/doctor", authenticateToken, requireDoctor, doctorRoutes);
 app.use("/api/daily-logs", authenticateToken, requireUser, dailyLogsRoutes);
+app.use('/api/ai-chat', authenticateToken, requireDoctor, aiChatRoutes);
+app.use('/api/communities', authenticateToken, requireDoctor, communitiesRoutes);
+app.use('/api/messages', authenticateToken, requireDoctor, messagesRoutes);
 
 // Protected route example (requires authentication)
 app.get("/api/protected", authenticateToken, (req, res) => {

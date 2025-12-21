@@ -13,7 +13,7 @@ router.get('/patients', async (req, res) => {
         const doctorId = req.user.id;
 
         const consents = await prisma.patientConsent.findMany({
-            where: { doctorId, granted: true },
+            where: { doctorId, status: 'APPROVED' },
             include: {
                 patient: {
                     select: {
@@ -65,7 +65,7 @@ router.get('/patients/:id', async (req, res) => {
 
         // Verify consent
         const consent = await prisma.patientConsent.findFirst({
-            where: { doctorId, patientId, granted: true },
+            where: { doctorId, patientId, status: 'APPROVED' },
         });
 
         if (!consent) {
@@ -129,7 +129,7 @@ router.post('/patients/:id/comment', async (req, res) => {
 
         // Verify consent
         const consent = await prisma.patientConsent.findFirst({
-            where: { doctorId, patientId, granted: true },
+            where: { doctorId, patientId, status: 'APPROVED' },
         });
 
         if (!consent) {
