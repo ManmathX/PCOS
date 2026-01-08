@@ -189,8 +189,11 @@ const DailyQuestionnaireForm = ({
       {/* Mood */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          How are you feeling today?
+          How are you feeling today? <span className="text-red-500">*</span>
         </label>
+        <p className="text-xs text-gray-500 mb-2">
+          Select the mood that best describes how you&apos;re feeling
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {moodOptions.map((mood) => (
             <button
@@ -212,6 +215,9 @@ const DailyQuestionnaireForm = ({
       {/* Period Tracking */}
       <div className="space-y-3 border-t pt-4">
         <h3 className="font-semibold text-gray-800">Period Information</h3>
+        <p className="text-xs text-gray-500">
+          Track your menstrual cycle to help us understand patterns
+        </p>
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -230,7 +236,7 @@ const DailyQuestionnaireForm = ({
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Flow Intensity
+                Flow Intensity <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
                 {flowOptions.map((flow) => (
@@ -259,6 +265,9 @@ const DailyQuestionnaireForm = ({
               >
                 Cramps Severity (0-10)
               </label>
+              <p className="text-xs text-gray-500 mb-1">
+                0 = No pain, 10 = Severe pain
+              </p>
               <input
                 type="number"
                 id="cramps"
@@ -277,13 +286,16 @@ const DailyQuestionnaireForm = ({
       {/* General Health */}
       <div className="space-y-3 border-t pt-4">
         <h3 className="font-semibold text-gray-800">General Health</h3>
+        <p className="text-xs text-gray-500">
+          Help us understand your daily wellness patterns
+        </p>
 
         <div>
           <label
             htmlFor="energyLevel"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Energy Level (1-10)
+            Energy Level (1-10): {formData.energyLevel || 5}
           </label>
           <input
             type="range"
@@ -400,6 +412,9 @@ const DailyQuestionnaireForm = ({
       {/* Symptoms */}
       <div className="space-y-3 border-t pt-4">
         <h3 className="font-semibold text-gray-800">Symptoms</h3>
+        <p className="text-xs text-gray-500">
+          Select any symptoms you&apos;re experiencing today
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {symptomOptions.map((symptom) => (
             <button
@@ -439,6 +454,16 @@ const DailyQuestionnaireForm = ({
 
       {/* Photo Capture */}
       <div className="border-t pt-4">
+        <div className="mb-2">
+          <h3 className="font-semibold text-gray-800">
+            Daily Photo (Optional)
+          </h3>
+          <p className="text-xs text-gray-500 mt-1">
+            Take a daily photo to track skin changes over time. Our AI will
+            analyze acne, facial hair, and skin texture to help monitor PCOS
+            symptoms.
+          </p>
+        </div>
         <PhotoCapture
           onPhotoCapture={handlePhotoCapture}
           initialPhoto={formData.photoUrl}
@@ -453,6 +478,8 @@ const DailyQuestionnaireForm = ({
       >
         {isSubmitting ? "Saving..." : "Save Daily Log"}
       </button>
+
+      <p className="text-xs text-gray-500 text-center">* Required fields</p>
     </form>
   );
 };

@@ -72,6 +72,25 @@ model User {
   postReplies          CommunityPostReply[]
   sentMessages         DirectMessage[]      @relation("MessagesSent")
   receivedMessages     DirectMessage[]      @relation("MessagesReceived")
+
+  // New feature relations
+  medications              Medication[]
+  foodEntries              FoodEntry[]
+  waterIntakes             WaterIntake[]
+  bodyMetrics              BodyMetric[]
+  labResults               LabResult[]
+  moodEntries              MoodEntry[]
+  mentalHealthAssessments  MentalHealthAssessment[]
+  exerciseEntries          ExerciseEntry[]
+  sleepEntries             SleepEntry[]
+  createdUserCommunities   UserCommunity[]        @relation("UserCommunityCreator")
+  userCommunityMemberships UserCommunityMember[]
+  userCommunityPosts       UserCommunityPost[]
+  userCommunityReplies     UserCommunityReply[]
+  userPostLikes            UserPostLike[]
+  skinHairLogs             SkinHairLog[]
+  fertilityEntries         FertilityEntry[]
+  fertilityTreatments      FertilityTreatment[]
 }
 
 // Doctor Profile (extends User)
@@ -340,4 +359,380 @@ model DirectMessage {
 
   @@index([senderId, receiverId, createdAt])
   @@index([receiverId, isRead])
+}
+
+// ========================================
+// NEW HEALTH TRACKING FEATURES
+// ========================================
+
+// Medication & Supplement Tracker
+model Medication {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String   // e.g., "Metformin", "Birth Control", "Inositol"
+  type         String   // "medication" or "supplement"
+  dosage       String?  // e.g., "500mg", "2 capsules"
+  frequency    String   // "daily", "twice_daily", "weekly", "as_needed"
+  timeOfDay    String[] // ["morning", "evening"]
+  startDate    DateTime
+  endDate      DateTime?
+  prescribedBy String?  // Doctor name
+  notes        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  logs MedicationLog[]
+
+  @@index([userId, isActive])
+}
+
+model MedicationLog {
+  id           String     @id @default(uuid())
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  userId       String
+  takenAt      DateTime   @default(now())
+  taken        Boolean    @default(true)
+  skippedReason String?
+  notes        String?
+
+  @@index([medicationId, takenAt])
+  @@index([userId, takenAt])
+}
+
+// Food & Nutrition Diary
+model FoodEntry {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+  mealType        String   // "breakfast", "lunch", "dinner", "snack"
+  foodName        String
+  portion         String?  // "1 cup", "2 servings"
+  calories        Int?
+  carbs           Float?   // grams
+  protein         Float?   // grams
+  fat             Float?   // grams
+  fiber           Float?   // grams
+  sugar           Float?   // grams
+  glycemicIndex   Int?     // 0-100
+  isAntiInflammatory Boolean @default(false)
+  isPCOSFriendly  Boolean  @default(false)
+  notes           String?
+  photoUrl        String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model WaterIntake {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  glasses   Int      @default(0) // 8oz glasses
+  mlTotal   Int?     // Total ml for the day
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+}
+
+// Weight & Body Metrics
+model BodyMetric {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime @db.Date
+  weight        Float?   // kg
+  height        Float?   // cm
+  bmi           Float?
+  waist         Float?   // cm - important for PCOS
+  hip           Float?   // cm
+  waistHipRatio Float?   // WHR - key PCOS indicator
+  bodyFat       Float?   // percentage
+  muscleMass    Float?   // kg
+  notes         String?
+  photoUrl      String?  // Progress photo
+  createdAt     DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// Lab Results Repository
+model LabResult {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testDate     DateTime
+  testName     String   // e.g., "Hormone Panel", "Glucose Test", "Lipid Panel"
+  labName      String?
+  orderedBy    String?  // Doctor name
+  fileUrl      String?  // PDF upload
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  values LabValue[]
+
+  @@index([userId, testDate])
+}
+
+model LabValue {
+  id          String    @id @default(uuid())
+  labResultId String
+  labResult   LabResult @relation(fields: [labResultId], references: [id], onDelete: Cascade)
+  marker      String    // e.g., "LH", "FSH", "Testosterone", "Insulin", "Glucose"
+  value       Float
+  unit        String    // e.g., "mIU/mL", "ng/dL", "mg/dL"
+  normalMin   Float?    // Reference range min
+  normalMax   Float?    // Reference range max
+  isAbnormal  Boolean   @default(false)
+  notes       String?
+
+  @@index([labResultId])
+}
+
+// Mood & Mental Health Tracking
+model MoodEntry {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime @db.Date
+  time          DateTime @default(now())
+  mood          String   // "great", "good", "okay", "low", "bad"
+  moodScore     Int      // 1-10
+  emotions      String[] // ["anxious", "happy", "irritable", "calm", "sad"]
+  anxietyLevel  Int?     // 0-10
+  triggers      String[] // ["work", "relationships", "health", "sleep"]
+  copingUsed    String[] // ["exercise", "meditation", "talking", "journaling"]
+  journalEntry  String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// Mental Health Assessments (PHQ-9, GAD-7)
+model MentalHealthAssessment {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentType String   // "PHQ9", "GAD7", "PCOS_ANXIETY"
+  date           DateTime @default(now())
+  responses      Json     // Array of question responses
+  totalScore     Int
+  severity       String   // "minimal", "mild", "moderate", "moderately_severe", "severe"
+  recommendations String[]
+  createdAt      DateTime @default(now())
+
+  @@index([userId, assessmentType, date])
+}
+
+// Exercise & Activity Logger
+model ExerciseEntry {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime @db.Date
+  activityType  String   // "walking", "running", "yoga", "strength", "swimming", "cycling"
+  duration      Int      // minutes
+  intensity     String   // "low", "moderate", "high"
+  caloriesBurned Int?
+  heartRateAvg  Int?
+  heartRateMax  Int?
+  steps         Int?
+  distance      Float?   // km
+  notes         String?
+  isPCOSFriendly Boolean @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// Sleep Tracker
+model SleepEntry {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date         DateTime @db.Date
+  bedTime      DateTime
+  wakeTime     DateTime
+  duration     Float    // hours
+  quality      Int      // 1-10
+  deepSleep    Float?   // hours
+  remSleep     Float?   // hours
+  awakenings   Int?     // number of times woke up
+  sleepLatency Int?     // minutes to fall asleep
+  factors      String[] // ["caffeine", "screen_time", "stress", "exercise"]
+  dreams       Boolean?
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// User Community Forum
+model UserCommunity {
+  id          String   @id @default(uuid())
+  name        String
+  description String?  @db.Text
+  category    String   // "general", "fertility", "weight_loss", "skincare", "mental_health", "success_stories"
+  imageUrl    String?
+  isPrivate   Boolean  @default(false)
+  creatorId   String
+  creator     User     @relation("UserCommunityCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  memberCount Int      @default(0)
+  postCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members UserCommunityMember[]
+  posts   UserCommunityPost[]
+
+  @@index([category])
+}
+
+model UserCommunityMember {
+  id          String        @id @default(uuid())
+  communityId String
+  community   UserCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String        @default("MEMBER") // "ADMIN", "MODERATOR", "MEMBER"
+  isAnonymous Boolean       @default(false)
+  joinedAt    DateTime      @default(now())
+
+  @@unique([communityId, userId])
+}
+
+model UserCommunityPost {
+  id          String        @id @default(uuid())
+  communityId String
+  community   UserCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title       String
+  content     String        @db.Text
+  isAnonymous Boolean       @default(false)
+  isPinned    Boolean       @default(false)
+  likesCount  Int           @default(0)
+  viewCount   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  replies UserCommunityReply[]
+  likes   UserPostLike[]
+
+  @@index([communityId, createdAt])
+}
+
+model UserCommunityReply {
+  id          String            @id @default(uuid())
+  postId      String
+  post        UserCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content     String            @db.Text
+  isAnonymous Boolean           @default(false)
+  likesCount  Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([postId, createdAt])
+}
+
+model UserPostLike {
+  id        String            @id @default(uuid())
+  postId    String
+  post      UserCommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime          @default(now())
+
+  @@unique([postId, userId])
+}
+
+// Skin & Hair Health Tracker
+model SkinHairLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+  
+  // Skin tracking
+  acneSeverity    Int?     // 0-10
+  acneLocations   String[] // ["chin", "forehead", "cheeks", "jawline"]
+  skinOiliness    Int?     // 0-10
+  skinDryness     Int?     // 0-10
+  
+  // Hair tracking
+  hairLossAmount  Int?     // 0-10
+  scalpOiliness   Int?     // 0-10
+  facialHairGrowth Int?    // 0-10
+  bodyHairGrowth  Int?     // 0-10
+  
+  // Products used
+  skincareProducts String[]
+  hairProducts     String[]
+  
+  photoUrl        String?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+// Fertility Planning
+model FertilityEntry {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+  
+  // BBT (Basal Body Temperature)
+  bbtTemp         Float?   // Celsius
+  bbtTime         DateTime?
+  
+  // Cervical Mucus
+  cervicalMucus   String?  // "dry", "sticky", "creamy", "watery", "egg_white"
+  
+  // Ovulation
+  ovulationTest   String?  // "negative", "positive", "peak"
+  ovulationPain   Boolean? // Mittelschmerz
+  
+  // Intimacy
+  intercourse     Boolean?
+  
+  // Other signs
+  cervixPosition  String?  // "low", "medium", "high"
+  cervixTexture   String?  // "firm", "soft"
+  breastTenderness Int?    // 0-10
+  
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+// Fertility Treatment Tracking
+model FertilityTreatment {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  treatmentType String   // "IUI", "IVF", "Clomid", "Letrozole", "Natural"
+  startDate     DateTime
+  endDate       DateTime?
+  clinic        String?
+  doctor        String?
+  cost          Float?
+  medications   String[]
+  outcome       String?  // "ongoing", "successful", "unsuccessful", "cancelled"
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, startDate])
 }
