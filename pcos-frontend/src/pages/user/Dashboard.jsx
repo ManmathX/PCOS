@@ -21,6 +21,7 @@ import { RiskReportPage } from "./RiskReportPage";
 import { HabitsPage } from "./HabitsPage";
 import { AppointmentPrepPage } from "./AppointmentPrepPage";
 import DailyLogPage from "./DailyLogPage";
+import ComprehensiveHealthPage from "./ComprehensiveHealthPage";
 import { NextCyclePrediction } from "../../components/prediction/NextCyclePrediction";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -60,6 +61,23 @@ const Overview = () => {
           ⚕️ This app does not diagnose. It supports early awareness and doctor
           consultation.
         </p>
+      </div>
+
+      <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100 flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-purple-900 mb-1">
+            New! Comprehensive Health Tracker
+          </h3>
+          <p className="text-sm text-purple-700">
+            Track meds, nutrition, mood, sleep, and more in one place.
+          </p>
+        </div>
+        <Link
+          to="/user/health"
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-bold"
+        >
+          Go to Tracker →
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -175,6 +193,7 @@ export const UserDashboard = () => {
   const navItems = [
     { path: "/user", icon: LayoutDashboard, label: "Dashboard", exact: true },
     { path: "/user/daily-log", icon: ClipboardList, label: "Daily Log" },
+    { path: "/user/health", icon: Activity, label: "Health Tracker" },
     { path: "/user/cycle", icon: Calendar, label: "Cycle Tracking" },
     { path: "/user/symptoms", icon: Activity, label: "Symptoms" },
     { path: "/user/risk", icon: Target, label: "Risk Report" },
@@ -298,7 +317,8 @@ export const UserDashboard = () => {
         <div className="p-4 md:p-8">
           <Routes>
             <Route index element={<Overview />} />
-            <Route path="daily-log" element={<DailyLogPage />} />
+            <Route path="daily-log" element={<DailyLogPage />} />{" "}
+            <Route path="health" element={<ComprehensiveHealthPage />} />{" "}
             <Route path="cycle" element={<CycleTrackingPage />} />
             <Route path="symptoms" element={<SymptomLogPage />} />
             <Route path="risk" element={<RiskReportPage />} />
