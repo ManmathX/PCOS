@@ -142,20 +142,18 @@ const FactorBreakdown = ({ breakdown }) => {
 
 export const RiskReportCard = () => {
     const [isPrepModalOpen, setIsPrepModalOpen] = useState(false);
-    // ... (RiskGauge, TrendIndicator, FactorBreakdown components remain unchanged) ...
-    // Note: To avoid re-pasting huge chunks, I'm assuming the helper components are above line 143 or in the file.
-    // Wait, I need to keep the file valid. The previous tool call showed lines 1-164.
-    // I will just modify the RiskReportCard component itself.
 
-    // Re-defining internal components to ensure file integrity if I'm replacing the whole file or just the export.
-    // Actually, I can use replace_file_content to inject the import and the component usage.
-
-    // Since I have multi-replace availability, I'll use that to precise target.
-    // But wait, "replace_file_content" is what I have selected. 
-    // I will just add the import at the top, and the button/modal in the render.
-
-    // Let's assume the Helper components (RiskGauge, etc) are there. I will target the `RiskReportCard` function start and return.
-
+    const { data, isLoading, error, refetch } = useQuery({
+        queryKey: ['risk', 'calculate'],
+        queryFn: async () => {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_URL}/risk/calculate`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        },
+        retry: false,
+    });
 
     if (isLoading) {
         return (
@@ -192,105 +190,120 @@ export const RiskReportCard = () => {
         );
     }
 
-    const { risk, breakdown, trend, insights } = data || {};
+    // Generic error boundary for component logic
+    try {
+        const { risk, breakdown, trend, insights } = data || {};
 
-    // Safety check: if data exists but risk is invalid, don't crash
-    if (!risk) {
+        // Safety check: if data exists but risk is invalid, don't crash
+        if (!data || !risk) {
+            // If we have data but no risk, show empty state. 
+            // If data is null/undefined (and not loading), show empty state.
+            return (
+                <div className="card">
+                    <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                        <Target className="w-5 h-5 mr-2 text-soft-pink-500" />
+                        PCOS Risk Assessment
+                    </h3>
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                        <p className="text-sm text-blue-700">
+                            No risk assessment data available yet. Please log your first symptom or cycle to get started.
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="card">
-                <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                    <Target className="w-5 h-5 mr-2 text-soft-pink-500" />
-                    PCOS Risk Assessment
-                </h3>
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                    <p className="text-sm text-blue-700">
-                        No risk assessment data available yet. Please log your first symptom or cycle to get started.
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                        <Target className="w-5 h-5 mr-2 text-soft-pink-500" />
+                        PCOS Risk Assessment
+                    </h3>
+                    <button
+                        onClick={() => refetch()}
+                        className="p-2 text-gray-400 hover:text-soft-pink-600 rounded-full hover:bg-soft-pink-50 transition-colors"
+                        title="Recalculate Risk"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                    </button>
+                </div>
+
+                <div className="medical-disclaimer mb-6">
+                    <p className="text-xs font-medium">
+                        ⚕️ Not a diagnosis. This tool assesses risk based on tracked symptoms and cycles.
                     </p>
+                </div>
+
+                <RiskGauge score={risk.score} riskLevel={risk.riskLevel} />
+
+                <TrendIndicator trend={trend} />
+
+                <FactorBreakdown breakdown={breakdown} />
+
+                <div className="mb-6">
+                    <h4 className="font-semibold text-gray-800 mb-3 text-sm flex items-center">
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Key Factors Detected
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                        {risk.reasons && risk.reasons.length > 0 ? (
+                            risk.reasons.map((reason, idx) => (
+                                <span key={idx} className="bg-soft-pink-50 text-gray-700 text-xs px-3 py-1.5 rounded-full border border-soft-pink-100">
+                                    {reason}
+                                </span>
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500 italic">No specific risk factors detected.</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h5 className="font-semibold text-gray-800 mb-3">Actionable Insights</h5>
+                    {risk.riskLevel === 'HIGH' ? (
+                        <div className="space-y-2 text-sm text-gray-700">
+                            <p className="flex items-start"><span className="mr-2 text-red-500">●</span> Schedule a gynecologist appointment for a formal checkup.</p>
+                            <p className="flex items-start"><span className="mr-2 text-red-500">●</span> Request standard PCOS panel: FSH, LH, Free Testosterone, Insulin.</p>
+                        </div>
+                    ) : risk.riskLevel === 'MODERATE' ? (
+                        <div className="space-y-2 text-sm text-gray-700">
+                            <p className="flex items-start"><span className="mr-2 text-orange-500">●</span> Monitor symptoms closely for next 2 months.</p>
+                            <p className="flex items-start"><span className="mr-2 text-orange-500">●</span> Focus on sleep and stress reduction to rule out lifestyle factors.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2 text-sm text-gray-700">
+                            <p className="flex items-start"><span className="mr-2 text-green-500">●</span> Continue regular tracking to maintain a good health history.</p>
+                            <p className="flex items-start"><span className="mr-2 text-green-500">●</span> No immediate action needed.</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
+                    <button
+                        onClick={() => setIsPrepModalOpen(true)}
+                        className="flex items-center text-sm font-medium text-soft-pink-600 hover:text-soft-pink-700 transition-colors"
+                    >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Download Appointment Prep Pack
+                    </button>
+                </div>
+
+                <AppointmentPrepModal
+                    isOpen={isPrepModalOpen}
+                    onClose={() => setIsPrepModalOpen(false)}
+                />
+            </div>
+        );
+    } catch (err) {
+        console.error("RiskReportCard Render Error:", err);
+        return (
+            <div className="card">
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                    <p className="text-sm text-red-700 font-medium">Unable to display risk report.</p>
+                    <p className="text-xs text-red-600 mt-1">Please try refreshing the page.</p>
                 </div>
             </div>
         );
     }
-
-    return (
-        <div className="card">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                    <Target className="w-5 h-5 mr-2 text-soft-pink-500" />
-                    PCOS Risk Assessment
-                </h3>
-                <button
-                    onClick={() => refetch()}
-                    className="p-2 text-gray-400 hover:text-soft-pink-600 rounded-full hover:bg-soft-pink-50 transition-colors"
-                    title="Recalculate Risk"
-                >
-                    <RefreshCw className="w-4 h-4" />
-                </button>
-            </div>
-
-            <div className="medical-disclaimer mb-6">
-                <p className="text-xs font-medium">
-                    ⚕️ Not a diagnosis. This tool assesses risk based on tracked symptoms and cycles.
-                </p>
-            </div>
-
-            <RiskGauge score={risk.score} riskLevel={risk.riskLevel} />
-
-            <TrendIndicator trend={trend} />
-
-            <FactorBreakdown breakdown={breakdown} />
-
-            <div className="mb-6">
-                <h4 className="font-semibold text-gray-800 mb-3 text-sm flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    Key Factors Detected
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                    {risk.reasons && risk.reasons.length > 0 ? (
-                        risk.reasons.map((reason, idx) => (
-                            <span key={idx} className="bg-soft-pink-50 text-gray-700 text-xs px-3 py-1.5 rounded-full border border-soft-pink-100">
-                                {reason}
-                            </span>
-                        ))
-                    ) : (
-                        <p className="text-sm text-gray-500 italic">No specific risk factors detected.</p>
-                    )}
-                </div>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-gray-200">
-                <h5 className="font-semibold text-gray-800 mb-3">Actionable Insights</h5>
-                {risk.riskLevel === 'HIGH' ? (
-                    <div className="space-y-2 text-sm text-gray-700">
-                        <p className="flex items-start"><span className="mr-2 text-red-500">●</span> Schedule a gynecologist appointment for a formal checkup.</p>
-                        <p className="flex items-start"><span className="mr-2 text-red-500">●</span> Request standard PCOS panel: FSH, LH, Free Testosterone, Insulin.</p>
-                    </div>
-                ) : risk.riskLevel === 'MODERATE' ? (
-                    <div className="space-y-2 text-sm text-gray-700">
-                        <p className="flex items-start"><span className="mr-2 text-orange-500">●</span> Monitor symptoms closely for next 2 months.</p>
-                        <p className="flex items-start"><span className="mr-2 text-orange-500">●</span> Focus on sleep and stress reduction to rule out lifestyle factors.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-2 text-sm text-gray-700">
-                        <p className="flex items-start"><span className="mr-2 text-green-500">●</span> Continue regular tracking to maintain a good health history.</p>
-                        <p className="flex items-start"><span className="mr-2 text-green-500">●</span> No immediate action needed.</p>
-                    </div>
-                )}
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
-                <button
-                    onClick={() => setIsPrepModalOpen(true)}
-                    className="flex items-center text-sm font-medium text-soft-pink-600 hover:text-soft-pink-700 transition-colors"
-                >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Download Appointment Prep Pack
-                </button>
-            </div>
-
-            <AppointmentPrepModal
-                isOpen={isPrepModalOpen}
-                onClose={() => setIsPrepModalOpen(false)}
-            />
-        </div>
-    );
 };
