@@ -6,6 +6,7 @@ import {
   detectPainSpike,
 } from "../services/riskEngine.js";
 import { getPhotoMetricsTrend } from "../services/imageAnalysis.js";
+import notificationService from "../services/notificationService.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -110,6 +111,17 @@ router.get("/calculate", async (req, res) => {
         symptomCount: userData.symptoms.length,
       },
     });
+
+    // Notify user if risk level changed
+    if (previousRisk && previousRisk.riskLevel !== riskResult.riskLevel) {
+      // Run asynchronously
+      notificationService.createRiskUpdateNotification(
+        userId,
+        previousRisk.riskLevel,
+        riskResult.riskLevel,
+        riskResult.score
+      ).catch(err => console.error('Risk notification error:', err));
+    }
 
     res.json({
       risk: savedRisk,

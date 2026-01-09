@@ -13,6 +13,7 @@ import {
   X,
   ClipboardList,
 } from "lucide-react";
+import { NotificationBell } from "../../components/notifications/NotificationBell";
 
 // Import page components
 import { CycleTrackingPage } from "./CycleTrackingPage";
@@ -48,6 +49,7 @@ const Overview = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
           Welcome to Your Dashboard
@@ -57,6 +59,7 @@ const Overview = () => {
         </p>
       </div>
 
+      {/* Medical Disclaimer */}
       <div className="medical-disclaimer">
         <p className="text-sm font-medium">
           ⚕️ This app does not diagnose. It supports early awareness and doctor
@@ -64,113 +67,119 @@ const Overview = () => {
         </p>
       </div>
 
-      <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100 flex items-center justify-between">
-        <div>
-          <h3 className="font-bold text-purple-900 mb-1">
-            New! Comprehensive Health Tracker
-          </h3>
-          <p className="text-sm text-purple-700">
-            Track meds, nutrition, mood, sleep, and more in one place.
-          </p>
+      {/* Priority Section - Top Row */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Comprehensive Health Tracker Highlight */}
+        <div className="p-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl text-white shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold mb-2">
+                🏥 Comprehensive Health Tracker
+              </h3>
+              <p className="text-purple-100 text-sm">
+                Track meds, nutrition, mood, sleep, and more in one place.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/user/health"
+            className="inline-block px-6 py-3 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition font-bold shadow-md"
+          >
+            Go to Tracker →
+          </Link>
         </div>
-        <Link
-          to="/user/health"
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-bold"
-        >
-          Go to Tracker →
-        </Link>
+
+        {/* Next Cycle Prediction */}
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+          <NextCyclePrediction />
+        </div>
       </div>
 
       {/* Survey Insights */}
       <SurveyInsightsCard />
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <NextCyclePrediction />
+      {/* Quick Actions - Second Row */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          <Link
+            to="/user/daily-log"
+            className="card hover:shadow-lg transition-shadow group"
+          >
+            <ClipboardList className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
+            <h4 className="font-semibold text-gray-800 mb-2">Daily Log</h4>
+            <p className="text-sm text-gray-600 mb-3">
+              Track your daily health and mood
+            </p>
+            <span className="text-purple-600 text-sm font-medium">
+              Log Today →
+            </span>
+          </Link>
+
+          <Link
+            to="/user/cycle"
+            className="card hover:shadow-lg transition-shadow group"
+          >
+            <Calendar className="w-8 h-8 text-soft-pink-500 mb-3 group-hover:scale-110 transition-transform" />
+            <h4 className="font-semibold text-gray-800 mb-2">Cycle Tracking</h4>
+            <p className="text-sm text-gray-600 mb-3">
+              Log your menstrual cycles
+            </p>
+            <span className="text-soft-pink-600 text-sm font-medium">
+              Track Now →
+            </span>
+          </Link>
+
+          <Link
+            to="/user/appointment"
+            className="card hover:shadow-lg transition-shadow group"
+          >
+            <FileText className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
+            <h4 className="font-semibold text-gray-800 mb-2">Appointment Prep</h4>
+            <p className="text-sm text-gray-600 mb-3">
+              Generate your health summary
+            </p>
+            <span className="text-blue-600 text-sm font-medium">
+              Prepare Pack →
+            </span>
+          </Link>
         </div>
-        <div>
-          <div className="card">
-            <h3 className="font-semibold text-gray-800 mb-3">Risk Level</h3>
-            {riskData?.risk ? (
-              <div>
-                <div
-                  className={`inline-block px-4 py-2 rounded-full font-semibold ${riskData.risk.riskLevel === "LOW"
+      </div>
+
+      {/* Health Tracking Grid */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Health Tracking</h3>
+        <div className="grid md:grid-cols-4 gap-4">
+          <Link to="/user/symptoms" className="card hover:shadow-lg transition-shadow text-center">
+            <Activity className="w-8 h-8 text-sage-600 mb-2 mx-auto" />
+            <h4 className="font-semibold text-gray-800 text-sm">Symptoms</h4>
+          </Link>
+
+          <Link to="/user/risk" className="card hover:shadow-lg transition-shadow text-center">
+            <Target className="w-8 h-8 text-warm-beige-700 mb-2 mx-auto" />
+            <h4 className="font-semibold text-gray-800 text-sm">Risk Report</h4>
+            {riskData?.risk && (
+              <div
+                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2 ${riskData.risk.riskLevel === "LOW"
                     ? "bg-green-100 text-green-700"
                     : riskData.risk.riskLevel === "MODERATE"
                       ? "bg-orange-100 text-orange-700"
                       : "bg-red-100 text-red-700"
-                    }`}
-                >
-                  {riskData.risk.riskLevel}
-                </div>
-                <p className="text-sm text-gray-600 mt-3">
-                  Last calculated{" "}
-                  {new Date(riskData.risk.calculatedAt).toLocaleDateString()}
-                </p>
+                  }`}
+              >
+                {riskData.risk.riskLevel}
               </div>
-            ) : (
-              <p className="text-sm text-gray-600">
-                Log cycle data to see risk assessment
-              </p>
             )}
-          </div>
-        </div>
-      </div>
+          </Link>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="card">
-          <ClipboardList className="w-8 h-8 text-purple-600 mb-3" />
-          <h3 className="font-semibold text-gray-800 mb-2">Daily Log</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Track your daily health and mood
-          </p>
-          <Link
-            to="/user/daily-log"
-            className="text-purple-600 hover:text-purple-700 text-sm font-medium"
-          >
-            View Calendar →
+          <Link to="/user/habits" className="card hover:shadow-lg transition-shadow text-center">
+            <BookOpen className="w-8 h-8 text-indigo-600 mb-2 mx-auto" />
+            <h4 className="font-semibold text-gray-800 text-sm">Habits</h4>
           </Link>
-        </div>
-        <div className="card">
-          <Calendar className="w-8 h-8 text-soft-pink-500 mb-3" />
-          <h3 className="font-semibold text-gray-800 mb-2">Cycle Tracking</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Log your menstrual cycles and view patterns
-          </p>
-          <Link
-            to="/user/cycle"
-            className="text-soft-pink-600 hover:text-soft-pink-700 text-sm font-medium"
-          >
-            Track Now →
-          </Link>
-        </div>
-        <div className="card">
-          <Activity className="w-8 h-8 text-sage-600 mb-3" />
-          <h3 className="font-semibold text-gray-800 mb-2">Symptoms</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Monitor symptoms and understand patterns
-          </p>
-          <Link
-            to="/user/symptoms"
-            className="text-sage-600 hover:text-sage-700 text-sm font-medium"
-          >
-            Log Symptoms →
-          </Link>
-        </div>
-      </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="card">
-          <Target className="w-8 h-8 text-warm-beige-700 mb-3" />
-          <h3 className="font-semibold text-gray-800 mb-2">Risk Assessment</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            View your PCOS risk with explanations
-          </p>
-          <Link
-            to="/user/risk"
-            className="text-warm-beige-700 hover:text-warm-beige-800 text-sm font-medium"
-          >
-            View Report →
+          <Link to="/user/health" className="card hover:shadow-lg transition-shadow text-center">
+            <Activity className="w-8 h-8 text-teal-600 mb-2 mx-auto" />
+            <h4 className="font-semibold text-gray-800 text-sm">Full Tracker</h4>
           </Link>
         </div>
       </div>
@@ -314,6 +323,7 @@ export const UserDashboard = () => {
                 PCOS Wellness
               </h1>
             </div>
+            <NotificationBell />
           </div>
         </header>
 

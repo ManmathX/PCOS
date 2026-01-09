@@ -78,34 +78,13 @@ export const RegisterForm = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Role Selection */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
-                            I am a...
-                        </label>
+
                         <div className="grid grid-cols-2 gap-4">
-                            <button
-                                type="button"
-                                onClick={() => setFormData({ ...formData, role: 'USER' })}
-                                className={`p-4 rounded-xl border-2 transition-all duration-300 ${formData.role === 'USER'
-                                        ? 'border-soft-pink-400 bg-gradient-to-br from-soft-pink-50 to-soft-pink-100 shadow-md scale-105'
-                                        : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                                    }`}
-                            >
-                                <User className={`w-8 h-8 mx-auto mb-2 transition-colors ${formData.role === 'USER' ? 'text-soft-pink-600' : 'text-gray-400'
-                                    }`} />
-                                <p className="font-medium">Patient / User</p>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setFormData({ ...formData, role: 'DOCTOR' })}
-                                className={`p-4 rounded-xl border-2 transition-all duration-300 ${formData.role === 'DOCTOR'
-                                        ? 'border-sage-500 bg-gradient-to-br from-sage-50 to-sage-100 shadow-md scale-105'
-                                        : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                                    }`}
-                            >
-                                <Stethoscope className={`w-8 h-8 mx-auto mb-2 transition-colors ${formData.role === 'DOCTOR' ? 'text-sage-700' : 'text-gray-400'
-                                    }`} />
-                                <p className="font-medium">Doctor / Professional</p>
-                            </button>
+
+
+
+
+
                         </div>
                     </div>
 
@@ -180,39 +159,7 @@ export const RegisterForm = () => {
                         </div>
                     </div>
 
-                    {/* Doctor-specific fields */}
-                    {formData.role === 'DOCTOR' && (
-                        <div className="space-y-4 animate-slide-up">
-                            <div>
-                                <label htmlFor="specialization" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Specialization
-                                </label>
-                                <input
-                                    id="specialization"
-                                    name="specialization"
-                                    type="text"
-                                    value={formData.specialization}
-                                    onChange={handleChange}
-                                    className="input-modern"
-                                    placeholder="Gynecology, Endocrinology, etc."
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                                    License Number
-                                </label>
-                                <input
-                                    id="licenseNumber"
-                                    name="licenseNumber"
-                                    type="text"
-                                    value={formData.licenseNumber}
-                                    onChange={handleChange}
-                                    className="input-modern"
-                                    placeholder="Medical License #"
-                                />
-                            </div>
-                        </div>
-                    )}
+
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>

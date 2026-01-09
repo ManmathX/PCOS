@@ -1,5 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import notificationService from '../services/notificationService.js';
+import { predictNextCycle } from '../services/predictionEngine.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -43,11 +45,32 @@ router.post('/', async (req, res) => {
                 startDate: new Date(startDate),
                 endDate: endDate ? new Date(endDate) : null,
                 flowIntensity,
-                painLevel,
+                painLevel: painLevel ? parseInt(painLevel) : null,
                 notes,
                 medications: medications || [],
             },
         });
+
+        // Trigger prediction and notification
+        try {
+            const allCycles = await prisma.cycleEntry.findMany({
+                where: { userId },
+                orderBy: { startDate: 'desc' },
+                take: 6,
+            });
+
+            const prediction = predictNextCycle(allCycles);
+            if (prediction.nextCycleDate) {
+                await notificationService.createCycleReminder(
+                    userId,
+                    prediction.nextCycleDate,
+                    prediction.avgCycleLength
+                );
+            }
+        } catch (notifError) {
+            console.error('Notification trigger error:', notifError);
+            // Don't fail the request if notification fails
+        }
 
         res.status(201).json({ cycle, message: 'Cycle logged successfully' });
     } catch (error) {
@@ -78,7 +101,7 @@ router.patch('/:id', async (req, res) => {
                 startDate: startDate ? new Date(startDate) : undefined,
                 endDate: endDate ? new Date(endDate) : undefined,
                 flowIntensity,
-                painLevel,
+                painLevel: painLevel ? parseInt(painLevel) : undefined,
                 notes,
                 medications,
             },

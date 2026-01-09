@@ -92,6 +92,8 @@ model User {
   fertilityTreatments      FertilityTreatment[]
   aiReports         AIReport[]
   onboardingSurvey  OnboardingSurvey?
+  notifications     Notification[]
+  notificationPreferences NotificationPreferences?
 }
 
 // Doctor Profile (extends User)
@@ -807,4 +809,75 @@ model OnboardingSurvey {
   workshops       String?  // "menstrual", "pcos", "both", "none"
   
   completedAt     DateTime @default(now())
+}
+
+// ========================================
+// NOTIFICATION SYSTEM
+// ========================================
+
+enum NotificationType {
+  CYCLE_REMINDER
+  MEDICATION_REMINDER
+  SYMPTOM_LOG_REMINDER
+  APPOINTMENT_PREP
+  HEALTH_MILESTONE
+  RISK_UPDATE
+  DAILY_LOG_REMINDER
+  GENERAL
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Notification {
+  id           String               @id @default(uuid())
+  userId       String
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         NotificationType
+  title        String
+  message      String               @db.Text
+  priority     NotificationPriority @default(MEDIUM)
+  isRead       Boolean              @default(false)
+  actionUrl    String?              // Link to relevant page (e.g., "/user/cycle", "/user/medications")
+  scheduledFor DateTime?            // For scheduled notifications
+  metadata     Json?                // Additional context (e.g., {cycleDay: 28, medicationName: "Metformin"})
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([userId, isRead, createdAt])
+  @@index([userId, scheduledFor])
+}
+
+model NotificationPreferences {
+  id                       String   @id @default(uuid())
+  userId                   String   @unique
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Enabled notification types
+  enableCycleReminders     Boolean  @default(true)
+  enableMedicationReminders Boolean @default(true)
+  enableSymptomReminders   Boolean  @default(true)
+  enableAppointmentReminders Boolean @default(true)
+  enableMilestones         Boolean  @default(true)
+  enableRiskUpdates        Boolean  @default(true)
+  enableDailyLogReminders  Boolean  @default(true)
+  
+  // Quiet hours
+  quietHoursEnabled        Boolean  @default(false)
+  quietHoursStart          String?  // "22:00" format
+  quietHoursEnd            String?  // "07:00" format
+  
+  // Reminder times
+  medicationReminderTimes  String[] // ["09:00", "21:00"]
+  symptomLogReminderTime   String?  @default("20:00")
+  dailyLogReminderTime     String?  @default("21:00")
+  
+  // Appointment prep advance notice (in days)
+  appointmentAdvanceNotice Int      @default(3)
+  
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 }
