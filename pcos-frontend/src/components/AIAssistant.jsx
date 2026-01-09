@@ -104,9 +104,9 @@ export function AIAssistant() {
             console.log("Data summary prepared for Gemini:", dataSummary);
 
             // 3. Send to Gemini
-            console.log("Initializing Gemini model: gemini-flash-latest");
+            console.log("Initializing Gemini model: gemini-2.5-flash");
             const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" }); // Using safe model
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Using safe model
 
             const prompt = `${SYSTEM_PROMPT}\n\nTask: Analyze this user's health data and provide a friendly, supportive health report with 3 key actionable tips. If risk is high, recommend a doctor visit gently.\n\n${dataSummary}`;
 
@@ -147,19 +147,19 @@ export function AIAssistant() {
         console.log("Processing user message in chat...");
 
         try {
-            console.log("Initializing Gemini model: gemini-flash-latest");
+            console.log("Initializing Gemini model: gemini-2.5-flash");
             const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
             const model = genAI.getGenerativeModel({
-                model: "gemini-flash-latest",
+                model: "gemini-2.5-flash",
                 systemInstruction: SYSTEM_PROMPT
             });
 
             // Filter out the initial greeting if it's from 'model' to comply with API rules (History must start with User)
-            // Also ensure roles are mapped correctly ('client' -> 'user', 'model' -> 'model')
+            // Also ensure roles are mapped correctly ('user' -> 'user', 'model' -> 'model')
             const history = messages
                 .filter((_, index) => index > 0 || messages[0].role !== 'model')
                 .map(m => ({
-                    role: m.role === 'client' ? 'user' : 'model',
+                    role: m.role === 'user' ? 'user' : 'model',
                     parts: [{ text: m.text }]
                 }));
 
@@ -234,8 +234,8 @@ export function AIAssistant() {
                                 >
                                     <div
                                         className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm whitespace-pre-wrap ${msg.role === 'user'
-                                                ? 'bg-gradient-to-br from-pink-500 to-purple-600 text-white rounded-tr-none'
-                                                : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+                                            ? 'bg-gradient-to-br from-pink-500 to-purple-600 text-white rounded-tr-none'
+                                            : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
                                             }`}
                                     >
                                         {msg.text}
