@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { Activity, Save } from 'lucide-react';
 import { format } from 'date-fns';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -28,12 +29,21 @@ export const SymptomLogger = ({ onSuccess }) => {
         severity: 5,
         notes: '',
     });
+    const [aiErrorMessage, setAiErrorMessage] = useState('');
 
     const queryClient = useQueryClient();
 
     const logSymptomMutation = useMutation({
         mutationFn: async (data) => {
-            const response = await axios.post(`${API_URL}/symptoms`, data);
+            const token = localStorage.getItem('token');
+            console.log('Logging symptom to:', `${API_URL}/symptoms`);
+            if (!token) throw new Error('No authentication token found. Please login again.');
+
+            const response = await axios.post(`${API_URL}/symptoms`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             return response.data;
         },
         onSuccess: () => {
@@ -42,12 +52,55 @@ export const SymptomLogger = ({ onSuccess }) => {
             if (onSuccess) onSuccess();
             // Reset only notes
             setFormData(prev => ({ ...prev, notes: '', severity: 5 }));
+            setAiErrorMessage(''); // Clear any error messages
+        },
+        onError: async (error) => {
+            // Generate AI error message
+            await generateAIErrorMessage(error);
         },
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
         logSymptomMutation.mutate(formData);
+    };
+
+    const generateAIErrorMessage = async (error) => {
+        try {
+            const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+            const errorType = error.response?.status || 'unknown';
+            const errorMessage = error.response?.data?.error || error.message;
+
+            const prompt = `
+            You are a helpful, empathetic health app assistant. A user tried to log a symptom but encountered an error.
+            
+            Error details:
+            - Status: ${errorType}
+            - Message: ${errorMessage}
+            
+            Generate a SHORT, friendly, and helpful error message (max 3-4 sentences) that:
+            1. Acknowledges the issue empathetically
+            2. Provides 2-3 specific troubleshooting steps
+            3. Reassures the user their data is safe
+            4. Uses a warm, supportive tone
+            
+            Format as plain text, no markdown. Include a heart emoji at the end.
+            `;
+
+            const result = await model.generateContent(prompt);
+            const aiMessage = result.response.text();
+            setAiErrorMessage(aiMessage);
+        } catch (aiError) {
+            console.error('AI error message generation failed:', aiError);
+            console.log('Original Error:', error);
+            // Fallback with specific error info
+            const specificError = error.response?.data?.error || error.message;
+            setAiErrorMessage(
+                `We couldn't save your symptom log. \nError: ${specificError} \n\nPlease check your connection and try again. 💙`
+            );
+        }
     };
 
     const handleChange = (e) => {
@@ -63,8 +116,15 @@ export const SymptomLogger = ({ onSuccess }) => {
             </h3>
 
             {logSymptomMutation.isError && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-4">
-                    <p className="text-sm text-red-700">Failed to log symptom. Please try again.</p>
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg mb-4">
+                    {aiErrorMessage ? (
+                        <p className="text-sm text-red-700 whitespace-pre-line">{aiErrorMessage}</p>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                            <p className="text-sm text-red-700">Generating helpful message...</p>
+                        </div>
+                    )}
                 </div>
             )}
 

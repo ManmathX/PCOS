@@ -14,112 +14,130 @@ import {
  * @param {Object} userData - User health data
  * @returns {Object} - { score, riskLevel, reasons }
  */
+/**
+ * Calculate PCOS risk score for a user
+ * @param {Object} userData - User health data
+ * @returns {Object} - { score, riskLevel, reasons, breakdown }
+ */
 export const calculateRiskScore = (userData) => {
-  let score = 0;
+  let totalScore = 0;
+  let maxPossibleScore = 0;
   const reasons = [];
-  const maxScore = 100;
 
-  // Factor 1: Cycle Irregularity (25 points max - reduced from 30)
+  // Breakdown of score by category
+  const breakdown = {
+    cycleScore: 0,
+    symptomScore: 0,
+    painScore: 0,
+    metabolicScore: 0,
+    photoScore: 0,
+  };
+
+  // Factor 1: Cycle Irregularity (Max 35 points)
+  maxPossibleScore += 35;
   if (userData.avgCycleLength) {
-    if (userData.avgCycleLength > 45) {
-      score += 25;
-      reasons.push("Cycle length >45 days (irregular)");
+    if (userData.avgCycleLength > 45 || userData.avgCycleLength < 21) {
+      breakdown.cycleScore = 35;
+      reasons.push("Significantly irregular cycles (>45 or <21 days)");
     } else if (userData.avgCycleLength > 35) {
-      score += 17;
-      reasons.push("Cycle length 35-45 days (slightly irregular)");
+      breakdown.cycleScore = 20;
+      reasons.push("Long cycles (35-45 days)");
+    } else {
+      // Regular cycle gets 0 risk points
     }
+  } else {
+    // No cycle data yet, assume neutral/partial risk or scale later
+    // For now, we don't add to score, but it effectively lowers the "confidence"
+    // In a strict percentage model, we might exclude this from maxPosibleScore if we want "risk per available data"
+    // Let's stick to additive for now but handle "no data" in the route
+    maxPossibleScore -= 35; // Remove from total if no data, to calculate percentage
   }
 
-  // Factor 2: BMI Trends (15 points max - reduced from 20)
-  if (userData.bmiTrend === "increasing" && userData.currentBMI > 25) {
-    score += 15;
-    reasons.push("BMI increasing trend (>25)");
-  } else if (userData.currentBMI > 30) {
-    score += 12;
-    reasons.push("BMI >30");
+  // Factor 2: Symptoms & Hyperandrogenism (Max 30 points)
+  // Acne, Hair Loss, Hirsutism
+  maxPossibleScore += 30;
+  const symptoms = userData.symptoms || [];
+
+  if (symptoms.includes('hirsutism') || (userData.photoAnalysis?.facialHairScore > 4)) {
+    breakdown.symptomScore += 15;
+    reasons.push("Signs of hirsutism (excess hair growth)");
   }
 
-  // Factor 3: Symptom Clustering (20 points max - reduced from 25)
-  const symptomCount = userData.symptoms ? userData.symptoms.length : 0;
-  const hasAcne = userData.symptoms?.includes("acne");
-  const hasHairLoss = userData.symptoms?.includes("hair_loss");
-  const hasMoodSwings = userData.symptoms?.includes("mood_swings");
-
-  if (hasAcne && hasHairLoss) {
-    score += 12;
-    reasons.push("Acne + hair loss (hormonal indicators)");
+  if (symptoms.includes('acne') || (userData.photoAnalysis?.acneSeverity > 4)) {
+    breakdown.symptomScore += 10;
+    if (!reasons.includes("Acne indications")) reasons.push("Acne indications");
   }
 
-  if (symptomCount >= 4) {
-    score += 8;
-    reasons.push(`Multiple symptoms present (${symptomCount})`);
+  if (symptoms.includes('hair_loss')) {
+    breakdown.symptomScore += 10;
+    reasons.push("Hair loss/thinning reported");
   }
 
-  // Factor 4: Pain Spike Detection (10 points max - reduced from 15)
-  if (userData.painSpikeDetected) {
-    score += 10;
-    reasons.push("Sudden increase in pain levels");
-  } else if (userData.avgPainLevel > 7) {
-    score += 7;
-    reasons.push("High average pain level (>7/10)");
-  }
+  // Cap symptom score
+  breakdown.symptomScore = Math.min(breakdown.symptomScore, 30);
 
-  // Factor 5: Family History (10 points max - unchanged)
-  if (userData.familyHistoryDiabetes) {
-    score += 10;
+
+  // Factor 3: Metabolic & BMI (Max 20 points)
+  if (userData.currentBMI !== null) {
+    maxPossibleScore += 20;
+    if (userData.currentBMI > 30) {
+      breakdown.metabolicScore += 20;
+      reasons.push("BMI indicates obesity (>30)");
+    } else if (userData.currentBMI > 25) {
+      breakdown.metabolicScore += 10;
+      reasons.push("BMI indicates overweight (>25)");
+    }
+
+    if (userData.familyHistoryDiabetes) {
+      breakdown.metabolicScore += 5; // Bonus points (cap check needed if we were strict)
+      reasons.push("Family history of diabetes");
+    }
+    breakdown.metabolicScore = Math.min(breakdown.metabolicScore, 20);
+  } else if (userData.familyHistoryDiabetes) {
+    // Only partial data available
+    maxPossibleScore += 10;
+    breakdown.metabolicScore += 10;
     reasons.push("Family history of diabetes");
   }
 
-  // Factor 6: Photo Analysis (20 points max - NEW!)
-  if (userData.photoAnalysis) {
-    const photoRisk = calculatePhotoRiskScore(
-      userData.photoAnalysis,
-      userData.photoTrend
-    );
 
-    if (photoRisk.score > 0) {
-      score += photoRisk.score;
-      reasons.push(...photoRisk.reasons);
-    }
+  // Factor 4: Pain & Inflammation (Max 15 points)
+  maxPossibleScore += 15;
+  if (userData.painSpikeDetected) {
+    breakdown.painScore += 15;
+    reasons.push("Significant menstrual pain spikes");
+  } else if (userData.avgPainLevel > 7) {
+    breakdown.painScore += 10;
+    reasons.push("High average menstrual pain");
+  } else if (userData.avgPainLevel > 4) {
+    breakdown.painScore += 5;
   }
 
-  // Factor 7: Photo Trend Analysis (additional context)
-  if (userData.photoMetricsTrend) {
-    const trend = userData.photoMetricsTrend;
-    if (trend.trend === "worsening") {
-      reasons.push(
-        `Worsening skin condition trend over ${trend.photoCount} days`
-      );
-    }
-    if (trend.avgAcneSeverity > 6) {
-      reasons.push(
-        `Consistently high acne severity (avg: ${trend.avgAcneSeverity}/10)`
-      );
-    }
-    if (trend.avgFacialHairScore > 6) {
-      reasons.push(
-        `Persistent facial hair growth (avg: ${trend.avgFacialHairScore}/10)`
-      );
-    }
+  // Calculate Total & Percentage
+  totalScore = breakdown.cycleScore + breakdown.symptomScore + breakdown.metabolicScore + breakdown.painScore;
+
+  // Normalize to 0-100 scale based on available data
+  let normalizedScore = 0;
+  if (maxPossibleScore > 0) {
+    normalizedScore = Math.round((totalScore / maxPossibleScore) * 100);
   }
 
-  // Cap score at maxScore
-  score = Math.min(score, maxScore);
-
-  // Determine risk level
+  // Determine risk level based on normalized percentage
   let riskLevel;
-  if (score < 30) {
+  if (normalizedScore < 30) {
     riskLevel = "LOW";
-  } else if (score < 60) {
+  } else if (normalizedScore < 60) {
     riskLevel = "MODERATE";
   } else {
     riskLevel = "HIGH";
   }
 
   return {
-    score,
+    score: normalizedScore, // 0-100
     riskLevel,
     reasons,
+    breakdown,
+    confidence: maxPossibleScore > 60 ? 'high' : 'medium', // Simple confidence metric
     calculatedAt: new Date(),
   };
 };

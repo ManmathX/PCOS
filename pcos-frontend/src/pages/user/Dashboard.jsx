@@ -30,6 +30,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Shared components
 import { LandingPage } from "../LandingPage";
+import { SurveyInsightsCard } from "../../components/survey/SurveyInsightsCard";
 
 const Overview = () => {
   const { data: riskData } = useQuery({
@@ -80,6 +81,9 @@ const Overview = () => {
         </Link>
       </div>
 
+      {/* Survey Insights */}
+      <SurveyInsightsCard />
+
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <NextCyclePrediction />
@@ -90,13 +94,12 @@ const Overview = () => {
             {riskData?.risk ? (
               <div>
                 <div
-                  className={`inline-block px-4 py-2 rounded-full font-semibold ${
-                    riskData.risk.riskLevel === "LOW"
-                      ? "bg-green-100 text-green-700"
-                      : riskData.risk.riskLevel === "MODERATE"
+                  className={`inline-block px-4 py-2 rounded-full font-semibold ${riskData.risk.riskLevel === "LOW"
+                    ? "bg-green-100 text-green-700"
+                    : riskData.risk.riskLevel === "MODERATE"
                       ? "bg-orange-100 text-orange-700"
                       : "bg-red-100 text-red-700"
-                  }`}
+                    }`}
                 >
                   {riskData.risk.riskLevel}
                 </div>

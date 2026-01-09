@@ -4,6 +4,20 @@ import { PrismaClient } from '@prisma/client';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+import { generateAppointmentPrep } from '../services/reportGenerator.js';
+
+// POST /api/ai-reports/prepare - Generate Appointment Prep Pack
+router.post('/prepare', async (req, res) => {
+    try {
+        const userId = req.user.id; // Corrected from req.user.userId based on other routes
+        const reportData = await generateAppointmentPrep(userId);
+        res.json(reportData);
+    } catch (error) {
+        console.error('Error generating prep pack:', error);
+        res.status(500).json({ error: 'Failed to generate appointment pack' });
+    }
+});
+
 // POST /api/ai-reports - Save a new report (User only)
 router.post('/', async (req, res) => {
     try {

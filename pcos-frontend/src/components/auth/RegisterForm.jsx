@@ -43,7 +43,7 @@ export const RegisterForm = () => {
         const result = await register(formData);
 
         if (result.success) {
-            navigate(result.user.role === 'DOCTOR' ? '/doctor' : '/user');
+            navigate(result.user.role === 'DOCTOR' ? '/doctor' : '/onboarding');
         } else {
             setError(result.error);
         }
@@ -79,8 +79,8 @@ export const RegisterForm = () => {
                                 type="button"
                                 onClick={() => setFormData({ ...formData, role: 'USER' })}
                                 className={`p-4 rounded-lg border-2 transition-all ${formData.role === 'USER'
-                                        ? 'border-soft-pink-400 bg-soft-pink-50'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-soft-pink-400 bg-soft-pink-50'
+                                    : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
                                 <User className="w-8 h-8 mx-auto mb-2 text-soft-pink-500" />
@@ -90,8 +90,8 @@ export const RegisterForm = () => {
                                 type="button"
                                 onClick={() => setFormData({ ...formData, role: 'DOCTOR' })}
                                 className={`p-4 rounded-lg border-2 transition-all ${formData.role === 'DOCTOR'
-                                        ? 'border-sage-500 bg-sage-50'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-sage-500 bg-sage-50'
+                                    : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
                                 <Stethoscope className="w-8 h-8 mx-auto mb-2 text-sage-600" />

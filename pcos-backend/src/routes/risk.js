@@ -51,12 +51,18 @@ router.get("/calculate", async (req, res) => {
     );
     const photoAnalysis = recentPhotoLog
       ? {
-          acneCount: recentPhotoLog.acneCount,
-          acneSeverity: recentPhotoLog.acneSeverity,
-          facialHairScore: recentPhotoLog.facialHairScore,
-          skinTexture: recentPhotoLog.skinTexture,
-        }
+        acneCount: recentPhotoLog.acneCount,
+        acneSeverity: recentPhotoLog.acneSeverity,
+        facialHairScore: recentPhotoLog.facialHairScore,
+        skinTexture: recentPhotoLog.skinTexture,
+      }
       : null;
+
+    // Fetch previous risk score for trend calculation
+    const previousRisk = await prisma.riskScore.findFirst({
+      where: { userId },
+      orderBy: { calculatedAt: 'desc' },
+    });
 
     // Build user data for risk calculation
     const userData = {
@@ -66,9 +72,9 @@ router.get("/calculate", async (req, res) => {
       avgPainLevel:
         cycles.length > 0
           ? Math.round(
-              cycles.reduce((sum, c) => sum + (c.painLevel || 0), 0) /
-                cycles.length
-            )
+            cycles.reduce((sum, c) => sum + (c.painLevel || 0), 0) /
+            cycles.length
+          )
           : 0,
       // Photo analysis data
       photoAnalysis,
@@ -80,6 +86,18 @@ router.get("/calculate", async (req, res) => {
     };
 
     const riskResult = calculateRiskScore(userData);
+
+    // Calculate Trend
+    let riskTrend = null;
+    if (previousRisk) {
+      const diff = riskResult.score - previousRisk.score;
+      riskTrend = {
+        direction: diff > 0 ? 'increased' : diff < 0 ? 'decreased' : 'stable',
+        value: Math.abs(diff),
+        previousScore: previousRisk.score,
+        daysSince: Math.floor((new Date() - new Date(previousRisk.calculatedAt)) / (1000 * 60 * 60 * 24))
+      };
+    }
 
     // Save risk score to database
     const savedRisk = await prisma.riskScore.create({
@@ -95,6 +113,9 @@ router.get("/calculate", async (req, res) => {
 
     res.json({
       risk: savedRisk,
+      breakdown: riskResult.breakdown, // Return detailed breakdown for UI
+      trend: riskTrend, // Return calculated trend
+      confidence: riskResult.confidence,
       insights: {
         avgCycleLength: userData.avgCycleLength,
         symptomCount: userData.symptoms.length,

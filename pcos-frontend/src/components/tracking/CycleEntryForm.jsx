@@ -15,14 +15,23 @@ export const CycleEntryForm = ({ onSuccess }) => {
         notes: '',
         medications: '',
     });
+    const [dateError, setDateError] = useState('');
 
+    const [aiErrorMessage, setAiErrorMessage] = useState('');
     const queryClient = useQueryClient();
 
     const createCycleMutation = useMutation({
         mutationFn: async (data) => {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('No authentication token found. Please login again.');
+
             const response = await axios.post(`${API_URL}/cycles`, {
                 ...data,
                 medications: data.medications ? data.medications.split(',').map(m => m.trim()) : [],
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             return response.data;
         },
@@ -30,6 +39,7 @@ export const CycleEntryForm = ({ onSuccess }) => {
             queryClient.invalidateQueries(['cycles']);
             queryClient.invalidateQueries(['prediction']);
             if (onSuccess) onSuccess();
+            setAiErrorMessage('');
             // Reset form
             setFormData({
                 startDate: format(new Date(), 'yyyy-MM-dd'),
@@ -40,16 +50,60 @@ export const CycleEntryForm = ({ onSuccess }) => {
                 medications: '',
             });
         },
+        onError: async (error) => {
+            // Fallback with specific error info
+            const specificError = error.response?.data?.error || error.message;
+            setAiErrorMessage(
+                `We couldn't save your cycle entry. \nError: ${specificError} \n\nPlease check your connection and try again. 💙`
+            );
+        }
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validate dates before submission
+        if (!validateDates()) {
+            return;
+        }
+
         createCycleMutation.mutate(formData);
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+
+        // Clear date error when user changes dates
+        if (name === 'startDate' || name === 'endDate') {
+            setDateError('');
+        }
+    };
+
+    const validateDates = () => {
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        const startStr = formData.startDate;
+        const endStr = formData.endDate;
+
+        // Check if start date is in the future
+        if (startStr > todayStr) {
+            setDateError('Start date cannot be in the future');
+            return false;
+        }
+
+        // Check if end date is before start date
+        if (endStr && endStr < startStr) {
+            setDateError('End date must be after start date');
+            return false;
+        }
+
+        // Check if end date is in the future
+        if (endStr && endStr > todayStr) {
+            setDateError('End date cannot be in the future');
+            return false;
+        }
+
+        return true;
     };
 
     return (
@@ -61,13 +115,21 @@ export const CycleEntryForm = ({ onSuccess }) => {
 
             {createCycleMutation.isError && (
                 <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-4">
-                    <p className="text-sm text-red-700">Failed to save cycle entry. Please try again.</p>
+                    <p className="text-sm text-red-700 whitespace-pre-line">
+                        {aiErrorMessage || 'Failed to save cycle entry. Please try again.'}
+                    </p>
                 </div>
             )}
 
             {createCycleMutation.isSuccess && (
                 <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-4">
                     <p className="text-sm text-green-700">Cycle logged successfully!</p>
+                </div>
+            )}
+
+            {dateError && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg mb-4">
+                    <p className="text-sm text-yellow-700">{dateError}</p>
                 </div>
             )}
 
@@ -82,6 +144,7 @@ export const CycleEntryForm = ({ onSuccess }) => {
                         name="startDate"
                         value={formData.startDate}
                         onChange={handleChange}
+                        max={format(new Date(), 'yyyy-MM-dd')}
                         className="input-field"
                         required
                     />
@@ -97,6 +160,8 @@ export const CycleEntryForm = ({ onSuccess }) => {
                         name="endDate"
                         value={formData.endDate}
                         onChange={handleChange}
+                        min={formData.startDate}
+                        max={format(new Date(), 'yyyy-MM-dd')}
                         className="input-field"
                     />
                 </div>

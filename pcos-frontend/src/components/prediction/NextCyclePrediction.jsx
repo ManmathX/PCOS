@@ -49,9 +49,11 @@ export const NextCyclePrediction = () => {
     const daysUntil = nextDate ? differenceInDays(nextDate, new Date()) : null;
 
     const getConfidenceBadge = () => {
-        const { confidence } = prediction;
+        const confidence = prediction?.confidence || 'low';
+        if (confidence === 'very_high') return 'bg-emerald-100 text-emerald-700';
         if (confidence === 'high') return 'bg-green-100 text-green-700';
         if (confidence === 'medium') return 'bg-orange-100 text-orange-700';
+        if (confidence === 'low') return 'bg-yellow-100 text-yellow-700';
         return 'bg-gray-100 text-gray-700';
     };
 
@@ -76,10 +78,15 @@ export const NextCyclePrediction = () => {
                         )}
                     </div>
 
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-center gap-2">
                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getConfidenceBadge()}`}>
-                            {prediction.confidence.toUpperCase()} CONFIDENCE
+                            {(prediction?.confidence || 'low').toUpperCase().replace('_', ' ')} CONFIDENCE
                         </span>
+                        {prediction?.stdDeviation && (
+                            <span className="text-xs text-gray-500">
+                                ±{prediction.stdDeviation} days
+                            </span>
+                        )}
                     </div>
                 </div>
             )}
@@ -101,16 +108,22 @@ export const NextCyclePrediction = () => {
             <div className="space-y-2 text-sm text-gray-700">
                 <div className="flex justify-between">
                     <span className="text-gray-600">Pattern</span>
-                    <span className="font-medium capitalize">{prediction.pattern?.replace('_', ' ')}</span>
+                    <span className="font-medium capitalize">{prediction?.pattern?.replace(/_/g, ' ') || 'Unknown'}</span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-gray-600">Avg Cycle Length</span>
-                    <span className="font-medium">{prediction.avgCycleLength} days</span>
+                    <span className="font-medium">{prediction?.avgCycleLength || 'N/A'} days</span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-gray-600">Based on</span>
-                    <span className="font-medium">{prediction.basedOnCycles} cycles</span>
+                    <span className="font-medium">{prediction?.basedOnCycles || 0} cycles</span>
                 </div>
+                {prediction?.outliersRemoved > 0 && (
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Outliers Removed</span>
+                        <span className="font-medium text-orange-600">{prediction.outliersRemoved}</span>
+                    </div>
+                )}
             </div>
 
             {insights && insights.length > 0 && (

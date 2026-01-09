@@ -91,6 +91,7 @@ model User {
   fertilityEntries         FertilityEntry[]
   fertilityTreatments      FertilityTreatment[]
   aiReports         AIReport[]
+  onboardingSurvey  OnboardingSurvey?
 }
 
 // Doctor Profile (extends User)
@@ -746,4 +747,64 @@ model AIReport {
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
+}
+
+// Onboarding Voice Survey Responses
+model OnboardingSurvey {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 1. Period Impact
+  periodImpact    String?  // "normal", "manageable", "irregular", "problematic"
+  
+  // 2. Perceived Reasons (Checkboxes)
+  reasons         String[] // ["stress", "sleep", "diet", "weight", "hormonal", "genetic", "unknown", "other"]
+  
+  // 3. PMS Coping (Checkboxes)
+  pmsCoping       String[] // ["tolerate", "home_remedies", "painkillers", "doctor", "rest", "other"]
+  
+  // 4. Physical Activity
+  activityLevel   String?  // "0", "1-2", "3-4", "5+"
+  
+  // 5. Sleep Duration
+  sleepDuration   String?  // "<6", "6-8", ">8", "irregular"
+  
+  // 6. Stress Level
+  stressLevel     String?  // "low", "moderate", "high", "very_high"
+  
+  // 7. Supplements
+  supplements     String?  // "rarely", "1-2", "3-4", "daily"
+  
+  // 8. Period Frequency
+  periodFrequency String?  // "21-35", "<21", ">35", "skip", "unsure"
+  
+  // 9. Bleeding Duration
+  bleedingDuration String? // "1-3", "4-7", ">7"
+  
+  // 10. Flow Intensity
+  flowIntensity   String?  // "light", "normal", "heavy", "clots"
+  
+  // 11. Pain Level
+  painLevel       String?  // "none", "mild", "moderate", "severe"
+  
+  // 12. Hirsutism
+  hirsutism       String?  // "no", "little", "lot"
+  
+  // 13. PCOS Awareness
+  pcosAwareness   String?  // "yes", "heard_only", "no"
+  
+  // 14. Information Source (Checkboxes)
+  infoSource      String[] // ["family", "social_media", "school", "doctor", "news", "none", "other"]
+  
+  // 15. PCOS Symptoms Knowledge (Checkboxes)
+  symptomKnowledge String[] // ["irregular_periods", "hirsutism", "acne", "weight_gain", "infertility", "unsure"]
+  
+  // 16. Knowledge Confidence
+  confidence      String?  // "very", "somewhat", "not_very", "not_at_all"
+  
+  // 17. Workshops Attended
+  workshops       String?  // "menstrual", "pcos", "both", "none"
+  
+  completedAt     DateTime @default(now())
 }

@@ -17,6 +17,8 @@ import { DoctorDashboard } from './pages/doctor/DashboardDoctor';
 // Shared components
 import { LandingPage } from './pages/LandingPage';
 import { AIAssistant } from './components/AIAssistant';
+import { VoiceOnboarding } from './pages/VoiceOnboarding';
+import { OnboardingReport } from './pages/OnboardingReport';
 
 const queryClient = new QueryClient();
 
@@ -28,12 +30,26 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to={isDoctor ? "/doctor" : "/user"} replace /> : <LoginForm />} />
-      <Route path="/register" element={isAuthenticated ? <Navigate to={isDoctor ? "/doctor" : "/user"} replace /> : <RegisterForm />} />
+      <Route path="/register" element={<RegisterForm />} />
 
       {/* User Routes */}
       <Route path="/user/*" element={
         <ProtectedRoute requireRole="USER">
           <UserDashboard />
+        </ProtectedRoute>
+      } />
+
+      {/* Onboarding Route */}
+      <Route path="/onboarding" element={
+        <ProtectedRoute requireRole="USER">
+          <VoiceOnboarding />
+        </ProtectedRoute>
+      } />
+
+      {/* Report Route */}
+      <Route path="/onboarding/report/:reportId" element={
+        <ProtectedRoute requireRole="USER">
+          <OnboardingReport />
         </ProtectedRoute>
       } />
 
@@ -46,7 +62,7 @@ function AppRoutes() {
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    </Routes >
   );
 }
 
