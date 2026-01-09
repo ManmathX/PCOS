@@ -13,10 +13,13 @@ import {
     X,
     Stethoscope
 } from 'lucide-react';
-import { PatientsListPage } from './PatientsListPage';
 import { AIChatPage } from './AIChatPage';
 import { CommunityPage } from './CommunityPage';
 import { MessagingPage } from './MessagingPage';
+
+// Import Pages
+import { PatientsListPage } from './PatientsListPage';
+import { PatientDetailsPage } from './PatientDetailsPage';
 
 const Overview = () => (
     <div className="space-y-6">
@@ -51,10 +54,6 @@ const Overview = () => (
     </div>
 );
 
-const Patients = () => <PatientsListPage />;
-const AIChat = () => <AIChatPage />;
-const Community = () => <CommunityPage />;
-const Messaging = () => <MessagingPage />;
 
 export const DoctorDashboard = () => {
     const { user, logout } = useAuth();
@@ -177,10 +176,11 @@ export const DoctorDashboard = () => {
                 <div className="p-4 md:p-8">
                     <Routes>
                         <Route index element={<Overview />} />
-                        <Route path="patients" element={<Patients />} />
-                        <Route path="community" element={<Community />} />
-                        <Route path="messages" element={<Messaging />} />
-                        <Route path="ai-chat" element={<AIChat />} />
+                        <Route path="patients" element={<PatientsListPage />} />
+                        <Route path="patients/:id" element={<PatientDetailsPage />} />
+                        <Route path="community" element={<CommunityPage />} />
+                        <Route path="messages" element={<MessagingPage />} />
+                        <Route path="ai-chat" element={<AIChatPage />} />
                     </Routes>
                 </div>
             </main>

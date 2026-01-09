@@ -16,6 +16,7 @@ import { DoctorDashboard } from './pages/doctor/DashboardDoctor';
 
 // Shared components
 import { LandingPage } from './pages/LandingPage';
+import { AIAssistant } from './components/AIAssistant';
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />
+          <AIAssistant />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

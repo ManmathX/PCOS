@@ -27,6 +27,7 @@ import nutritionRoutes from "./routes/nutrition.js";
 import moodRoutes from "./routes/mood.js";
 import metricsRoutes from "./routes/metrics.js";
 import labsRoutes from "./routes/labs.js";
+import aiReportsRoutes from "./routes/aiReports.js";
 import { authenticateToken } from "./middleware/auth.js";
 import { requireUser, requireDoctor } from "./middleware/rbac.js";
 
@@ -100,6 +101,7 @@ app.use("/api/nutrition", authenticateToken, requireUser, nutritionRoutes);
 app.use("/api/mood", authenticateToken, requireUser, moodRoutes);
 app.use("/api/metrics", authenticateToken, requireUser, metricsRoutes);
 app.use("/api/labs", authenticateToken, requireUser, labsRoutes);
+app.use("/api/ai-reports", authenticateToken, aiReportsRoutes);
 
 // Protected route example (requires authentication)
 app.get("/api/protected", authenticateToken, (req, res) => {

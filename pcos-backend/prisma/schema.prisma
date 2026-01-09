@@ -64,7 +64,6 @@ model User {
   consentAsDoctor   PatientConsent[]    @relation("DoctorConsents")
   doctorComments    DoctorComment[]
   dailyLogs         DailyLog[]
-
   // Community relations
   createdCommunities   Community[]          @relation("CommunityCreator")
   communityMemberships CommunityMember[]
@@ -91,6 +90,7 @@ model User {
   skinHairLogs             SkinHairLog[]
   fertilityEntries         FertilityEntry[]
   fertilityTreatments      FertilityTreatment[]
+  aiReports         AIReport[]
 }
 
 // Doctor Profile (extends User)
@@ -735,4 +735,15 @@ model FertilityTreatment {
   updatedAt     DateTime @updatedAt
 
   @@index([userId, startDate])
+}
+
+// AI Health Reports
+model AIReport {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
