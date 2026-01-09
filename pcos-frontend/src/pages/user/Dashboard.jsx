@@ -207,10 +207,10 @@ export const UserDashboard = () => {
   return (
     <div className="min-h-screen bg-warm-beige-50 flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex md:flex-col w-64 bg-white border-r border-gray-200">
+      <aside className="hidden md:flex md:flex-col w-64 bg-gradient-to-br from-white to-soft-pink-50/30 border-r border-gray-200 shadow-sm">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-soft-pink-400 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-soft-pink-400 to-vibrant-purple-500 rounded-full flex items-center justify-center shadow-md">
               <span className="text-white font-bold">
                 {user?.firstName?.charAt(0) || "U"}
               </span>
@@ -229,7 +229,7 @@ export const UserDashboard = () => {
             <Link
               key={item.path}
               to={item.path}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-soft-pink-50 hover:text-soft-pink-600 transition-colors mb-1"
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gradient-to-r hover:from-soft-pink-50 hover:to-vibrant-purple-50 hover:text-soft-pink-600 transition-all duration-300 mb-1 hover-lift"
             >
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
@@ -240,7 +240,7 @@ export const UserDashboard = () => {
         <div className="p-4 border-t border-gray-200">
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full"
+            className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-300 w-full"
           >
             <LogOut className="w-5 h-5" />
             <span>Logout</span>

@@ -4,7 +4,11 @@
 
 @layer base {
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-  
+
+  * {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-warm-beige-50 text-gray-900 antialiased;
     font-family: 'Inter', system-ui, sans-serif;
@@ -12,29 +16,134 @@
 }
 
 @layer components {
+
+  /* Enhanced Button Styles */
   .btn-primary {
-    @apply bg-soft-pink-400 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-soft-pink-500 transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-gradient-to-r from-soft-pink-400 to-soft-pink-600 text-white font-medium px-6 py-2.5 rounded-lg transition-all duration-300 shadow-md hover:scale-105 active:scale-95 relative overflow-hidden;
   }
-  
+
+  .btn-primary:hover {
+    box-shadow: 0 0 20px rgba(255, 143, 163, 0.4), 0 0 40px rgba(255, 143, 163, 0.2);
+  }
+
   .btn-secondary {
-    @apply bg-sage-500 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-sage-600 transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-gradient-to-r from-sage-500 to-sage-700 text-white font-medium px-6 py-2.5 rounded-lg transition-all duration-300 shadow-md hover:scale-105 active:scale-95;
   }
-  
+
+  .btn-secondary:hover {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .btn-premium {
+    @apply bg-gradient-to-r from-vibrant-purple-500 to-soft-pink-500 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 shadow-lg hover:scale-105 active:scale-95 relative overflow-hidden;
+  }
+
+  .btn-premium:hover {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+  }
+
+  /* Card Styles */
   .card {
-    @apply bg-white rounded-card shadow-card p-6 transition-shadow duration-200 hover:shadow-lg;
+    @apply bg-white rounded-card shadow-card p-6 transition-all duration-300;
   }
-  
+
+  .card:hover {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-glass rounded-2xl shadow-glass p-6 border border-white/20 transition-all duration-300;
+  }
+
+  .glass-card:hover {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Input Styles */
   .input-field {
-    @apply w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-soft-pink-300 focus:border-soft-pink-400 outline-none transition-all duration-200;
+    @apply w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-soft-pink-300 focus:border-transparent outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm;
   }
-  
+
+  .input-modern {
+    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-transparent focus:ring-2 focus:ring-offset-2 focus:ring-soft-pink-400 outline-none transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300;
+  }
+
+  /* Utility Components */
   .medical-disclaimer {
     @apply bg-warm-beige-100 border-l-4 border-sage-500 p-4 rounded-r-lg text-sm text-gray-700;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:transform hover:-translate-y-1;
+  }
+
+  .hover-lift:hover {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Animated Gradient Background */
+  .gradient-bg-animated {
+    background: linear-gradient(-45deg, #FFF5F7, #FFE4E9, #F3E8FF, #E8EDE4);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
   }
 }
 
 @layer utilities {
+
+  /* Text Gradients */
   .text-gradient-pink {
     @apply bg-gradient-to-r from-soft-pink-500 to-soft-pink-700 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-purple {
+    @apply bg-gradient-to-r from-vibrant-purple-500 to-soft-pink-500 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-sage {
+    @apply bg-gradient-to-r from-sage-500 to-sage-700 bg-clip-text text-transparent;
+  }
+
+  /* Staggered Animation Delays */
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animate-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
