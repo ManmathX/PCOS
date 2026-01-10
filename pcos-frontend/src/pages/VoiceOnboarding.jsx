@@ -176,7 +176,7 @@ export function VoiceOnboarding() {
         try {
             // Use Gemini to map voice text to options
             const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             const prompt = `
             Task: Map the user's spoken answer to the most appropriate option(s) from a list.
