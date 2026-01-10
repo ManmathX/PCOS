@@ -1,0 +1,8 @@
+{
+  "projectId": "32887d05-bc8a-4bc1-ac65-94d916b2782c",
+  "createdAt": 1768019024487,
+  "startupCommands": [
+    "cd pcos-backend && bun run dev",
+    "cd pcos-frontend && bun run dev"
+  ]
+}
