@@ -19,46 +19,9 @@ const QUESTIONS = [
         options: ["Completely normal", "A little disturbed but manageable", "Quite irregular or difficult", "Very problematic and affecting my daily life"]
     },
     {
-        id: 'reasons',
-        text: "What do you think are the main reasons your periods are like this?",
-        type: 'checkbox',
-        options: ["Stress", "Sleep problems", "Food / diet habits", "Weight changes", "Hormonal issues", "Family/genetic reasons", "I don’t know", "Other"]
-    },
-    {
-        id: 'pmsCoping',
-        text: "When your period or PMS is bad, what do you usually do?",
-        type: 'checkbox',
-        options: ["Do nothing, just tolerate it", "Home remedies", "Painkillers", "Visit a doctor", "Take rest / skip activities", "Other"]
-    },
-    {
-        id: 'activityLevel',
-        text: "On average, how many days per week do you do at least 30 minutes of physical activity?",
-        options: ["0", "1–2", "3–4", "5 or more"]
-    },
-    {
-        id: 'sleepDuration',
-        text: "How would you describe your usual sleep?",
-        options: ["Less than 6 hours", "6–8 hours", "More than 8 hours", "Very irregular"]
-    },
-    {
-        id: 'stressLevel',
-        text: "How is your everyday stress level right now?",
-        options: ["Low", "Moderate", "High", "Very high"]
-    },
-    {
-        id: 'supplements',
-        text: "How often do you take any multivitamins or supplements?",
-        options: ["Rarely", "1–2 times per week", "3–4 times per week", "Almost every day"]
-    },
-    {
         id: 'periodFrequency',
         text: "In the last 6 months, how often do your periods come?",
         options: ["Every 21–35 days", "Often earlier than 21 days", "Often later than 35 days", "Sometimes skip for 2–3 months or more", "Not sure"]
-    },
-    {
-        id: 'bleedingDuration',
-        text: "How many days does your bleeding usually last?",
-        options: ["1–3 days", "4–7 days", "More than 7 days"]
     },
     {
         id: 'flowIntensity',
@@ -76,31 +39,19 @@ const QUESTIONS = [
         options: ["No", "A little", "Quite a lot"]
     },
     {
-        id: 'pcosAwareness',
-        text: "Have you ever heard of PCOS or PCOD?",
-        options: ["Yes", "I have heard the name only", "No"]
+        id: 'activityLevel',
+        text: "On average, how many days per week do you do at least 30 minutes of physical activity?",
+        options: ["0", "1–2", "3–4", "5 or more"]
     },
     {
-        id: 'infoSource',
-        text: "Where did you first hear about PCOS or PCOD?",
-        type: 'checkbox',
-        options: ["Friends or family", "Social media", "School / college", "Doctor or nurse", "TV / newspapers", "I have not heard about it", "Other"]
+        id: 'sleepDuration',
+        text: "How would you describe your usual sleep?",
+        options: ["Less than 6 hours", "6–8 hours", "More than 8 hours", "Very irregular"]
     },
     {
-        id: 'symptomKnowledge',
-        text: "In your opinion, which of these can be symptoms of PCOS? Check all that apply.",
-        type: 'checkbox',
-        options: ["Irregular periods", "Unwanted thick hair", "Acne", "Weight gain", "Difficulty getting pregnant", "I am not sure"]
-    },
-    {
-        id: 'confidence',
-        text: "How confident do you feel about your knowledge of periods and menstrual health?",
-        options: ["Very confident", "Somewhat confident", "Not very confident", "Not at all confident"]
-    },
-    {
-        id: 'workshops',
-        text: "Have you ever attended any session workshop or class about menstrual health or PCOS?",
-        options: ["Yes, about menstrual health", "Yes, about PCOS", "Yes, about both", "No"]
+        id: 'stressLevel',
+        text: "How is your everyday stress level right now?",
+        options: ["Low", "Moderate", "High", "Very high"]
     }
 ];
 

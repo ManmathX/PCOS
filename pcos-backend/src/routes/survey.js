@@ -229,20 +229,33 @@ router.post('/', async (req, res) => {
 });
 
 function headingPrompt(r) {
+    const periodImpact = r.periodImpact || "Not provided";
+    const reasons = (r.reasons && r.reasons.length > 0) ? r.reasons.join(', ') : "Not provided";
+    const pmsCoping = (r.pmsCoping && r.pmsCoping.length > 0) ? r.pmsCoping.join(', ') : "Not provided";
+    const activityLevel = r.activityLevel || "Not provided";
+    const sleepDuration = r.sleepDuration || "Not provided";
+    const stressLevel = r.stressLevel || "Not provided";
+    const supplements = r.supplements || "Not provided";
+    const cycle = r.periodFrequency || "Not provided";
+    const flow = r.flowIntensity || "Not provided";
+    const pain = r.painLevel || "Not provided";
+    const hirsutism = r.hirsutism || "Not provided";
+    const confidence = r.confidence || "Not provided";
+
     return `
     You are an expert PCOS and women's health assistant. Analyze this user's onboarding survey data and provide a personalized "PCOS Health & Risk Report".
 
     User Data:
-    - Period Impact: ${r.periodImpact}
-    - Reasons: ${r.reasons?.join(', ')}
-    - PMS Coping: ${r.pmsCoping?.join(', ')}
-    - Activity Level: ${r.activityLevel} days/week
-    - Sleep: ${r.sleepDuration}
-    - Stress: ${r.stressLevel}
-    - Supplements: ${r.supplements}
-    - Cycle: ${r.periodFrequency}, Flow: ${r.flowIntensity}, Pain: ${r.painLevel}
-    - Hirsutism: ${r.hirsutism}
-    - Knowledge CONFIDENCE: ${r.confidence}
+    - Period Impact: ${periodImpact}
+    - Reasons: ${reasons}
+    - PMS Coping: ${pmsCoping}
+    - Activity Level: ${activityLevel} days/week
+    - Sleep: ${sleepDuration}
+    - Stress: ${stressLevel}
+    - Supplements: ${supplements}
+    - Cycle: ${cycle}, Flow: ${flow}, Pain: ${pain}
+    - Hirsutism: ${hirsutism}
+    - Knowledge CONFIDENCE: ${confidence}
 
     Output Format (Markdown):
     # Your Personalized PCOS Health Report
