@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, Sparkles, FileText, Activity } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -26,6 +27,7 @@ If asked about medical advice without data, give general wellness tips but ALWAY
 `;
 
 export function AIAssistant() {
+    const { isAuthenticated } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         { role: 'model', text: "Hey bestie! ✨ I'm Gemmi, your PCOS pal. How are we feeling today? 💖" }
@@ -41,6 +43,8 @@ export function AIAssistant() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    if (!isAuthenticated) return null;
 
     const generateHealthReport = async () => {
         setIsLoading(true);
