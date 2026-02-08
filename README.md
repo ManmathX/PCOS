@@ -1,5 +1,5 @@
 # PCOS Early-Detection & Guidance App
-> ⚕️ **Medical Disclaimer**: This app does not diagnose. It supports early awareness and doctor consultation.
+> ⚕️ **Medical Disclaimer**: This app does not diagnose. It supports early awareness and doctor consultation
 
 A production-ready React application for PCOS risk detection with dual roles (User & Doctor), explainable AI-assisted guidance, and comprehensive health tracking.
 
